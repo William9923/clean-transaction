@@ -1,7 +1,6 @@
 package conf
 
 type Config struct {
-	App   appConfig   `json:"app"`
 	Log   logConfig   `json:"log"`
 	MySQL mysqlConfig `json:"mysql"`
 }
@@ -13,12 +12,6 @@ func GetConfig() Config {
 }
 
 type (
-	appConfig struct {
-		Port         string `json:"port"`
-		ReadTimeout  uint   `json:"read_timeout"`
-		WriteTimeout uint   `json:"write_timeout"`
-	}
-
 	logConfig struct {
 		Level      string `json:"level"`
 		FileLevel  string `json:"file_level"`

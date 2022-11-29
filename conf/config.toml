@@ -1,8 +1,3 @@
-[app]
-  port = ":8086"
-  read_timeout = 10000 # in ms
-  write_timeout = 65000 # in ms
-
 [log]
   level = "debug"
   fileLevel = "error"

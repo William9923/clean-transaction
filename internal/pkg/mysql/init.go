@@ -13,7 +13,8 @@ var (
 	db *sql.DB
 )
 
-func Init(cfg conf.Config) error {
+func Init() error {
+	cfg := conf.GetConfig()
 	connStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true",
 		cfg.MySQL.User,
 		cfg.MySQL.Pass,

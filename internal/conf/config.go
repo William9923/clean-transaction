@@ -6,6 +6,12 @@ type Config struct {
 	MySQL mysqlConfig `json:"mysql"`
 }
 
+var cfg Config = Config{}
+
+func GetConfig() Config {
+	return cfg
+}
+
 type (
 	appConfig struct {
 		Port         string `json:"port"`

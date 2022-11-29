@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Load(file string, cfg interface{}) error {
+func Load(file string) error {
 
 	viperInstance := viper.New()
 	viperInstance.SetConfigType("toml")

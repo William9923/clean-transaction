@@ -19,28 +19,11 @@ type server struct {
 func NewServer() server {
 	e := echo.New()
 
-	// // global middlewares
-	// e.Use(
-	// 	middleware.ContextMiddleware(),
-	// 	middleware.Logger(),
-	// 	echoMiddleware.BodyDumpWithConfig(echoMiddleware.BodyDumpConfig{
-	// 		Skipper: middleware.BodyDumpSkipper,
-	// 		Handler: middleware.BodyDumpHandler,
-	// 	}),
-	// 	middleware.Recover(),
-	// 	middleware.CORS(),
-	// 	middleware.Headers(),
-	// )
-	//
-	// e.HTTPErrorHandler = ErrHandler{E: e}.Handler
-	//
-	// e.Debug = conf.Server().GetLoglevel() == "DEBUG"
 	srv := server{
-		e:    e,
-		port: ":8888",
-		// port:         conf.Server().GetPort(),
-		// readTimeout:  time.Duration(conf.Server().GetReadTimeout()) * time.Millisecond,
-		// writeTimeout: time.Duration(conf.Server().GetWriteTimeout()) * time.Millisecond,
+		e:            e,
+		port:         ":8888",
+		readTimeout:  500 * time.Millisecond,
+		writeTimeout: 500 * time.Millisecond,
 	}
 
 	return srv

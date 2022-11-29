@@ -30,3 +30,8 @@ func (userRepo) GetMultipleUsers(ctx context.Context, userIDs []uint64) ([]model
 func (userRepo) GetUser(ctx context.Context, userID uint64) (model.User, error) {
 	panic("unimplemented")
 }
+
+// WithdrawUserBalance implements dao.UserDAO
+func (userRepo) WithdrawUserBalance(ctx context.Context, user model.User, amount int32) error {
+	panic("unimplemented")
+}

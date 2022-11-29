@@ -2,6 +2,7 @@ package transfer
 
 import (
 	"context"
+	"errors"
 
 	"github.com/William9923/clean-transaction/internal/data/dao"
 	"github.com/William9923/clean-transaction/internal/data/model"
@@ -42,7 +43,7 @@ func (s *transferService) Transfer(ctx context.Context, param DoTransferParam) e
 		}
 	}()
 
-	users, err := s.UserRepo.GetMultipleUsers(ctx, []uint64{param.FromUserID, param.ToUserID})
+	users, err := s.UserRepo.GetUsersInTransfer(ctx, [2]uint64{param.FromUserID, param.ToUserID})
 	if err != nil {
 		needRollback = true
 		return err
@@ -66,18 +67,44 @@ func (s *transferService) Transfer(ctx context.Context, param DoTransferParam) e
 		return err
 	}
 
-	if err = s.UserRepo.DepositUserBalance(ctx, toUser, param.Amount); err != nil {
+	if err = s.depositUserBalance(ctx, toUser, param.Amount); err != nil {
 		needRollback = true
 		return err
 	}
 
-	if err = s.UserRepo.WithdrawUserBalance(ctx, fromUser, param.Amount); err != nil {
+	if err = s.withdrawUserBalance(ctx, fromUser, param.Amount); err != nil {
 		needRollback = true
 		return err
 	}
 
 	if err := s.TransactionManager.Commit(ctx); err != nil {
 		needRollback = true
+		return err
+	}
+
+	return nil
+}
+
+func (s *transferService) depositUserBalance(ctx context.Context, user model.User, amount int32) error {
+	if amount <= 0 {
+		return errors.New("invalid amount to withdraw")
+	}
+
+	user.Balance += amount
+	if err := s.UserRepo.UpdateUser(ctx, user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *transferService) withdrawUserBalance(ctx context.Context, user model.User, amount int32) error {
+	if user.Balance < amount {
+		return errors.New("invalid balance to withdraw")
+	}
+
+	user.Balance -= amount
+	if err := s.UserRepo.UpdateUser(ctx, user); err != nil {
 		return err
 	}
 

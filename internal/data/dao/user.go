@@ -7,9 +7,8 @@ import (
 )
 
 type UserDAO interface {
-	GetMultipleUsers(ctx context.Context, userIDs []uint64) ([]model.User, error)
+	GetUsersInTransfer(ctx context.Context, userIDs [2]uint64) ([2]model.User, error)
 	GetUser(ctx context.Context, userID uint64) (model.User, error)
 
-	DepositUserBalance(ctx context.Context, user model.User, amount int32) error
-	WithdrawUserBalance(ctx context.Context, user model.User, amount int32) error
+	UpdateUser(ctx context.Context, user model.User) error
 }

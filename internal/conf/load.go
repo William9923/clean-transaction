@@ -14,6 +14,6 @@ func Load(file string) error {
 		return err
 	}
 
-	return viperInstance.Unmarshal(cfg)
+	return viperInstance.Unmarshal(&cfg)
 
 }

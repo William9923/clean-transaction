@@ -9,11 +9,12 @@ import (
 	internal_mysql "github.com/William9923/clean-transaction/internal/pkg/mysql"
 	"github.com/William9923/clean-transaction/internal/pkg/mysql/repo"
 	"github.com/William9923/clean-transaction/internal/services/transfer"
+	"github.com/labstack/gommon/log"
 )
 
 func main() {
 
-	cfgpath := flag.String("configpath", "./conf/config.yaml", "path to config file")
+	cfgpath := flag.String("configpath", "./conf/config.toml", "path to config file")
 	flag.Parse()
 
 	if err := conf.Load(*cfgpath); err != nil {
@@ -31,9 +32,12 @@ func main() {
 	})
 
 	ctx := context.Background()
-	service.Transfer(ctx, transfer.DoTransferParam{
+	err := service.Transfer(ctx, transfer.DoTransferParam{
 		FromUserID: 1,
 		ToUserID:   2,
 		Amount:     50000,
 	})
+	if err != nil {
+		log.Error(err)
+	}
 }

@@ -9,11 +9,10 @@
   outputFile = "app.log"
 
 [mysql]
+  dbName = "local_transfer_proj_db"
+  maxIdleConn = 10
+  maxOpenConn = 50
   user = "root"
   pass = ""
   host = "127.0.0.1"
   port = "3306"
-  db_name = "local_transfer_proj_db"
-  max_idle_conn = 10
-  max_open_conn = 50
-

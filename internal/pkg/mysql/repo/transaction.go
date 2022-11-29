@@ -30,8 +30,8 @@ func (repo transactionManager) Begin(ctx context.Context) (context.Context, erro
 		return ctx, err
 	}
 
-	internal_mysql.InjectTx(ctx, tx)
-	return ctx, nil
+	ctxWithTrx := internal_mysql.InjectTx(ctx, tx)
+	return ctxWithTrx, nil
 }
 
 func (repo transactionManager) Commit(ctx context.Context) error {

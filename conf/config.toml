@@ -1,0 +1,19 @@
+[app]
+  port = ":8086"
+  read_timeout = 10000 # in ms
+  write_timeout = 65000 # in ms
+
+[log]
+  level = "debug"
+  fileLevel = "error"
+  outputFile = "app.log"
+
+[mysql]
+  user = "root"
+  pass = ""
+  host = "127.0.0.1"
+  port = "3306"
+  db_name = "local_transfer_proj_db"
+  max_idle_conn = 10
+  max_open_conn = 50
+

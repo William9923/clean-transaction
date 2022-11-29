@@ -14,36 +14,45 @@ type DoTransferParam struct {
 	Amount     int32
 }
 
-type TransferServiceParam struct{}
+type TransferServiceParam struct {
+	TransactionManager dao.TransactionManager
+	TransferLogsRepo   dao.TransferLogsDAO
+	UserRepo           dao.UserDAO
+}
 
 type TransferService interface {
 	Transfer(ctx context.Context, param DoTransferParam) error
 }
 
 type transferService struct {
-	TransactionManager dao.TransactionManager
-	TransferLogsRepo   dao.TransferLogsDAO
-	UserRepo           dao.UserDAO
+	transactionManager dao.TransactionManager
+	transferLogsRepo   dao.TransferLogsDAO
+	userRepo           dao.UserDAO
 }
 
 func InitTransferService(params TransferServiceParam) TransferService {
-	return &transferService{}
+	return &transferService{
+		transactionManager: params.TransactionManager,
+		transferLogsRepo:   params.TransferLogsRepo,
+		userRepo:           params.UserRepo,
+	}
 }
 
 func (s *transferService) Transfer(ctx context.Context, param DoTransferParam) error {
 
 	var needRollback bool = false
 
-	if err := s.TransactionManager.Begin(ctx); err != nil {
+	ctxWithTrx, err := s.transactionManager.Begin(ctx)
+	if err != nil {
 		return err
 	}
 	defer func() {
 		if needRollback {
-			s.TransactionManager.Rollback(ctx)
+			s.transactionManager.Rollback(ctx)
 		}
 	}()
 
-	users, err := s.UserRepo.GetUsersInTransfer(ctx, [2]uint64{param.FromUserID, param.ToUserID})
+	users, err := s.userRepo.GetUsersInTransfer(ctxWithTrx, [2]uint64{param.FromUserID, param.ToUserID})
 	if err != nil {
 		needRollback = true
 		return err
@@ -61,23 +70,23 @@ func (s *transferService) Transfer(ctx context.Context, param DoTransferParam) e
 		}
 	}
 
-	err = s.TransferLogsRepo.CreateTransferLogs(ctx, fromUser, toUser, param.Amount)
+	err = s.transferLogsRepo.CreateTransferLogs(ctxWithTrx, fromUser, toUser, param.Amount)
 	if err != nil {
 		needRollback = true
 		return err
 	}
 
-	if err = s.depositUserBalance(ctx, toUser, param.Amount); err != nil {
+	if err = s.depositUserBalance(ctxWithTrx, toUser, param.Amount); err != nil {
 		needRollback = true
 		return err
 	}
 
-	if err = s.withdrawUserBalance(ctx, fromUser, param.Amount); err != nil {
+	if err = s.withdrawUserBalance(ctxWithTrx, fromUser, param.Amount); err != nil {
 		needRollback = true
 		return err
 	}
 
-	if err := s.TransactionManager.Commit(ctx); err != nil {
+	if err := s.transactionManager.Commit(ctxWithTrx); err != nil {
 		needRollback = true
 		return err
 	}
@@ -91,7 +100,7 @@ func (s *transferService) depositUserBalance(ctx context.Context, user model.Use
 	}
 
 	user.Balance += amount
-	if err := s.UserRepo.UpdateUser(ctx, user); err != nil {
+	if err := s.userRepo.UpdateUser(ctx, user); err != nil {
 		return err
 	}
 
@@ -104,7 +113,7 @@ func (s *transferService) withdrawUserBalance(ctx context.Context, user model.Us
 	}
 
 	user.Balance -= amount
-	if err := s.UserRepo.UpdateUser(ctx, user); err != nil {
+	if err := s.userRepo.UpdateUser(ctx, user); err != nil {
 		return err
 	}
 

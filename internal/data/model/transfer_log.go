@@ -8,9 +8,3 @@ type TransferLog struct {
 	CreatedAt uint64
 	Status    byte
 }
-
-const (
-	INVALID = iota
-	VALID
-	DELETED
-)

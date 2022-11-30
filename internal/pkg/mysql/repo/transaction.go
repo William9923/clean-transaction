@@ -19,6 +19,33 @@ func TransactionManager() dao.TransactionManager {
 	}
 }
 
+func (repo transactionManager) WithinTransaction(ctx context.Context, fn dao.TransactionFn) error {
+	var needRollback bool = false
+
+	ctxWithTrx, err := repo.Begin(ctx)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if needRollback {
+			repo.Rollback(ctxWithTrx)
+		}
+	}()
+
+	if err := fn(ctxWithTrx); err != nil {
+		needRollback = true
+		return err
+	}
+
+	if err := repo.Commit(ctxWithTrx); err != nil {
+		needRollback = true
+		return err
+	}
+
+	return nil
+}
+
 func (repo transactionManager) Begin(ctx context.Context) (context.Context, error) {
 	tx := internal_mysql.ExtractTx(ctx)
 	if tx != nil {

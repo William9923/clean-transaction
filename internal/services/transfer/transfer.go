@@ -22,6 +22,7 @@ type TransferServiceParam struct {
 
 type TransferService interface {
 	Transfer(ctx context.Context, param DoTransferParam) error
+	TransferV2(ctx context.Context, param DoTransferParam) error
 }
 
 type transferService struct {
@@ -48,7 +49,7 @@ func (s *transferService) Transfer(ctx context.Context, param DoTransferParam) e
 	}
 	defer func() {
 		if needRollback {
-			s.transactionManager.Rollback(ctx)
+			s.transactionManager.Rollback(ctxWithTrx)
 		}
 	}()
 
@@ -91,6 +92,45 @@ func (s *transferService) Transfer(ctx context.Context, param DoTransferParam) e
 		return err
 	}
 
+	return nil
+}
+
+func (s *transferService) TransferV2(ctx context.Context, param DoTransferParam) error {
+	return s.transactionManager.WithinTransaction(ctx, func(context.Context) error {
+		return s.transfer(ctx, param)
+	})
+}
+
+func (s *transferService) transfer(ctx context.Context, param DoTransferParam) error {
+	users, err := s.userRepo.GetUsersInTransfer(ctx, [2]uint64{param.FromUserID, param.ToUserID})
+	if err != nil {
+		return err
+	}
+
+	var fromUser model.User
+	var toUser model.User
+	for _, user := range users {
+		if user.UserID == param.FromUserID {
+			fromUser = user
+		}
+
+		if user.UserID == param.ToUserID {
+			toUser = user
+		}
+	}
+
+	err = s.transferLogsRepo.CreateTransferLogs(ctx, fromUser, toUser, param.Amount)
+	if err != nil {
+		return err
+	}
+
+	if err = s.depositUserBalance(ctx, toUser, param.Amount); err != nil {
+		return err
+	}
+
+	if err = s.withdrawUserBalance(ctx, fromUser, param.Amount); err != nil {
+		return err
+	}
 	return nil
 }
 

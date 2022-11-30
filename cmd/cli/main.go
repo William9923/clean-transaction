@@ -15,6 +15,9 @@ import (
 func main() {
 
 	cfgpath := flag.String("configpath", "./conf/config.toml", "path to config file")
+	fromTargetUser := flag.Int64("from", 1, "user to transfer from...")
+	toTargetUser := flag.Int64("to", 2, "user to transfer to...")
+	amount := flag.Int64("amount", 0, "amount to transfer")
 	flag.Parse()
 
 	if err := conf.Load(*cfgpath); err != nil {
@@ -33,9 +36,9 @@ func main() {
 
 	ctx := context.Background()
 	err := service.Transfer(ctx, transfer.DoTransferParam{
-		FromUserID: 1,
-		ToUserID:   2,
-		Amount:     50000,
+		FromUserID: uint64(*fromTargetUser),
+		ToUserID:   uint64(*toTargetUser),
+		Amount:     int32(*amount),
 	})
 	if err != nil {
 		log.Error(err)

@@ -8,6 +8,6 @@
   maxIdleConn = 10
   maxOpenConn = 50
   user = "root"
-  pass = ""
+  pass = "pass"
   host = "127.0.0.1"
-  port = "3306"
+  port = "3336"

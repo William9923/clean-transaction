@@ -1,0 +1,1 @@
+sudo docker compose -f ./scripts/mysql/docker-compose.yaml -p transaction-db up -d 

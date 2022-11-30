@@ -1,0 +1,1 @@
+sudo docker compose -f script/mysql/docker-compose.yaml -p transaction-db down

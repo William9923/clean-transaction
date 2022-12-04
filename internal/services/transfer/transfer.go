@@ -96,8 +96,8 @@ func (s *transferService) Transfer(ctx context.Context, param DoTransferParam) e
 }
 
 func (s *transferService) TransferV2(ctx context.Context, param DoTransferParam) error {
-	return s.transactionManager.WithinTransaction(ctx, func(context.Context) error {
-		return s.transfer(ctx, param)
+	return s.transactionManager.WithinTransaction(ctx, func(trxCtx context.Context) error {
+		return s.transfer(trxCtx, param)
 	})
 }
 
@@ -117,6 +117,34 @@ func (s *transferService) transfer(ctx context.Context, param DoTransferParam) e
 		if user.UserID == param.ToUserID {
 			toUser = user
 		}
+	}
+
+	err = s.transferLogsRepo.CreateTransferLogs(ctx, fromUser, toUser, param.Amount)
+	if err != nil {
+		return err
+	}
+
+	if err = s.depositUserBalance(ctx, toUser, param.Amount); err != nil {
+		return err
+	}
+
+	if err = s.withdrawUserBalance(ctx, fromUser, param.Amount); err != nil {
+		return err
+	}
+	return nil
+}
+
+// NOTE: if there are 2 session, in which user 1 transfer to user 2 & user 2 transfer to user 1, then it is possible to have deadlock with below code
+func (s *transferService) transferWithPossibleRace(ctx context.Context, param DoTransferParam) error {
+
+	fromUser, err := s.userRepo.GetUser(ctx, param.FromUserID)
+	if err != nil {
+		return err
+	}
+
+	toUser, err := s.userRepo.GetUser(ctx, param.ToUserID)
+	if err != nil {
+		return err
 	}
 
 	err = s.transferLogsRepo.CreateTransferLogs(ctx, fromUser, toUser, param.Amount)

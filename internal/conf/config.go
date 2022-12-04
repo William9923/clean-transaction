@@ -19,12 +19,13 @@ type (
 	}
 
 	mysqlConfig struct {
-		User    string `json:"user"`
-		Pass    string `json:"pass"`
-		Host    string `json:"host"`
-		Port    string `json:"port"`
-		DBName  string `json:"db_name"`
-		MaxOpen int    `json:"max_open_conn"`
-		MaxIdle int    `json:"max_idle_conn"`
+		User           string `json:"user"`
+		Pass           string `json:"pass"`
+		Host           string `json:"host"`
+		Port           string `json:"port"`
+		DBName         string `json:"db_name"`
+		MaxOpen        int    `json:"max_open_conn"`
+		MaxIdle        int    `json:"max_idle_conn"`
+		IsolationLevel string `json:"isolation_level"`
 	}
 )

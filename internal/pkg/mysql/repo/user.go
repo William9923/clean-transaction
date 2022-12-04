@@ -19,6 +19,12 @@ const (
     WHERE user_id = ?
   `
 
+	queryInsertUser = `
+    INSERT INTO local_transfer_proj_db.user_tab
+      (name, balance, created_at, updated_at)
+    VALUES(?, ?, ?, ?);
+  `
+
 	queryGetUser = `
     SELECT 
       user_id,
@@ -79,7 +85,7 @@ func (repo userRepo) GetUser(ctx context.Context, userID uint64) (model.User, er
 
 	if errDB != nil {
 		if errors.Is(errDB, sql.ErrNoRows) {
-			return model.User{}, errors.New("invalid user, no entry for that user ID")
+			return model.User{}, errDB
 		}
 		if errMySQL, ok := errDB.(*mysql.MySQLError); ok {
 			return model.User{}, internal_mysql.GetMysqlSpecificError(int(errMySQL.Number), errDB)
@@ -149,6 +155,34 @@ func (repo userRepo) UpdateUser(ctx context.Context, user model.User) error {
 		_, errDB = repo.db.ExecContext(ctx, queryUpdateUser, queryValues...)
 	} else {
 		_, errDB = tx.ExecContext(ctx, queryUpdateUser, queryValues...)
+	}
+
+	if errDB != nil {
+		if errMySQL, ok := errDB.(*mysql.MySQLError); ok {
+			return internal_mysql.GetMysqlSpecificError(int(errMySQL.Number), errDB)
+		}
+		return errDB
+	}
+
+	return nil
+}
+
+func (repo userRepo) InsertUser(ctx context.Context, user model.User) error {
+
+	tx := internal_mysql.ExtractTx(ctx)
+	now := internal_time.Now().UnixMilli()
+	queryValues := []interface{}{
+		user.Name,
+		user.Balance,
+		now,
+		now,
+	}
+
+	var errDB error
+	if tx == nil {
+		_, errDB = repo.db.ExecContext(ctx, queryInsertUser, queryValues...)
+	} else {
+		_, errDB = tx.ExecContext(ctx, queryInsertUser, queryValues...)
 	}
 
 	if errDB != nil {

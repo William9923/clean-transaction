@@ -32,3 +32,31 @@ VALUES('William', 100000, 1669718675585, 1669718675585);
 INSERT INTO local_transfer_proj_db.user_tab
 (name, balance, created_at, updated_at)
 VALUES('Pikachu', 50000, 1669718675585, 1669718675585);
+
+INSERT INTO local_transfer_proj_db.user_tab
+(name, balance, created_at, updated_at)
+VALUES('Naruto', 50000, 1669718675585, 1669718675585);
+
+INSERT INTO local_transfer_proj_db.user_tab
+(name, balance, created_at, updated_at)
+VALUES('Ichigo', 50000, 1669718675585, 1669718675585);
+
+INSERT INTO local_transfer_proj_db.user_tab
+(name, balance, created_at, updated_at)
+VALUES('Luffy', 50000, 1669718675585, 1669718675585);
+
+INSERT INTO local_transfer_proj_db.user_tab
+(name, balance, created_at, updated_at)
+VALUES('Cid', 50000, 1669718675585, 1669718675585);
+
+INSERT INTO local_transfer_proj_db.user_tab
+(name, balance, created_at, updated_at)
+VALUES('Aether', 50000, 1669718675585, 1669718675585);
+
+INSERT INTO local_transfer_proj_db.user_tab
+(name, balance, created_at, updated_at)
+VALUES('Chief', 50000, 1669718675585, 1669718675585);
+
+INSERT INTO local_transfer_proj_db.user_tab
+(name, balance, created_at, updated_at)
+VALUES('Master', 50000, 1669718675585, 1669718675585);

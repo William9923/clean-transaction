@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/William9923/clean-transaction/internal/conf"
 	"github.com/William9923/clean-transaction/internal/data/dao"
 	internal_mysql "github.com/William9923/clean-transaction/internal/pkg/mysql"
 )
@@ -52,7 +53,17 @@ func (repo transactionManager) Begin(ctx context.Context) (context.Context, erro
 		return ctx, errors.New("ctx already had a transaction")
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+	isolationLevel, err := getSqlTrxLevel(conf.GetConfig().MySQL.IsolationLevel)
+	if err != nil {
+		return ctx, err
+	}
+
+	opts := &sql.TxOptions{
+		ReadOnly:  false,
+		Isolation: isolationLevel,
+	}
+
+	tx, err = repo.db.BeginTx(ctx, opts)
 	if err != nil {
 		return ctx, err
 	}
@@ -85,4 +96,19 @@ func (transactionManager) Rollback(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func getSqlTrxLevel(level string) (sql.IsolationLevel, error) {
+	switch level {
+	case "default", "repeatable-read": // NOTE: default of mysql -> repeatable-read
+		return sql.LevelRepeatableRead, nil
+	case "read-committed":
+		return sql.LevelReadCommitted, nil
+	case "read-uncommitted":
+		return sql.LevelReadUncommitted, nil
+	case "serializable":
+		return sql.LevelSerializable, nil
+	default:
+		return sql.LevelDefault, errors.New("unrecognized mysql trx level")
+	}
 }
